@@ -1,0 +1,90 @@
+Multiple threads can be created using pthread_t var and pthread_create(&var, NULL, &function, args);
+    Basics:
+        Thread can be ended/ rejoined using pthread_join(var, NULL);
+        Must check whether functions return 0 or not.
+        A race condition can occue when multiple threads are running at the same time and are not syncing
+        correctly when altering the same variable, this causes the behaviour of the program to become
+        unpredictable. This can be fixed using a boolean variable to switch between them.
+        This can be made simpler and safer using pthread_mutex_t var nad pthread_mutex_init(&var, NULL);
+        and pthead_mutex_destroy(&var);
+        This unction is implemented by pthread_mutex_lock(&mutex); nad pthead_mutex_unlock(&mutex) with 
+        the necessary code inbetween. 
+        Mutex should only be used when necessary as it decreases the speed of the program to a single
+        threaded program.
+    Creating threads in a loop:
+        Create array of threads and functions as expected
+        Create thread and join thread should be in seperate loops
+    Returning value from a thread:
+        Create a pointer to a data type and reference the address of this variable in the pthread_join(
+        thread, (void**) &var);
+        The pointer inside the function must be malloced so that the data stays after the termination of
+        the function. Return pointer to pointer of malloced data
+        After return the data allocated must be freed.
+    Passing arguments into t hreads:
+        An argv can be passed into the function as a void pointer, the data which is being pointed to though 
+        must be malloced data so that we know it will not change. The data must then be cast to store it as a
+        local variable.
+        The malloced data must then be freed, usually inside the function it is else, else when the threads
+        re-joined.
+    Passing arguments and returning in one function:
+        When this scenario occurs we are able to assign the return value into the variable which is passed into
+        the function when they share the same data type.
+        If access to the argument pointer still exists then we can set arg and be done, if it does not exist
+        then we must return the arg value and free it outside the routine such as was done with previous returns.
+    Trylock and lock 
+        Trylock will return a value which tells us whether the program was locked or not. Trylock will also not 
+        stop the program if it cannot lock and will continue while lock does stop the program and it waits.
+    Condition variables 
+        pthread_cond_wait(&condVar, &mutexVar)' can be called to temporarily disable the mutex and pause the
+        execution of the current thread. This thread can continue execution by calling 
+        pthread_cond_signal(&condVar);
+        Broadcast can be used to awaken all signals as signal doesen't garauntee that all signals are awoken
+    Barriers
+        A function that will make threads wait at a barrier until there is a certain amount of threads at the
+        barrier. It is used with a pthread_barrier_t variable which is started with the pthread_barrier_init(
+        &barrier, NULL, 3); A thread can be made wait at the barrier using pthread_barrier_wait(&variable);
+    Detacheable threads:
+        A thread can be detaached by using pthread_detach(threadVar);  join cannot be used on detached threads
+        instead pthread_exit(0) is used.
+        To create initially detached thread declare thread variable and thread att variable using
+        pthread_attr_t var and then pthread_attr_init(&var) then pthread_attr_setdetachstate(&var,
+        PTHREAD_CREATE_DETACHED);  then create using &var as second argument. After used should be destroyed 
+        using pthread_attr_destroy(&var);
+        The purpose of creating a detached thread is to be able to end the program without waiting for the threads
+        to finish terminating, this can be dangerous if not all destroy functions all called when the program
+        terminates. For this reason, they are rarely used.
+    Deadlock
+        A Deadlock is when mutliple mutexes are active at the same time in different threads and the program 
+        freezes as both of them halt the other, this is a somewhat rare occurance as it relies on the code
+        being written in a way that allows the phenomenom but also coincidentaly that it happens in the time frame
+    Recursive Mutex
+        Setup the same as a detacheable thread but instea of PTHREAD_CREATE_DETACHED use PTHREAD_MUTEX_RECURSIVE
+        this should then be destroyed the same way using pthread_attr_destroy();
+        This allows you to lock something multiple times, in effect what this does is double lock, triple lock etc
+    	The same thread that locks the process must also unlock the process
+    Semaphores
+        Declared using sem_t, initialised using sem_init(&variable, 0, i), 0 for multithread, 1 for multi-process.
+        Destroy using sem_destroy(&variable). sem_wait(&variable) acts similar to mutex lock while sem_post(&variable)
+        acts similar to mutex unlock. It will work through the threads in order the same as mutex but as appose to
+        mutex instead of 1 thread working at a time, the value for i is the amount of threadas operating simultaneously
+        Can be used for login queues.
+        Two semaphores can be used together to handle the adding and removing from a buffer, where the wait and post are
+        used alternating in each function, func 1: wait sem1, post sem2, fun2: wait sem2, post sem1
+        A sem wait can be used in a thread with init of 0 to make this thread wait for the others to get to the point of 
+        post
+    Parralelism
+        This is multiple threads doing the same thing with different sets of data. Concurrency also includes multi-
+        threaded programs which have different purposes.
+        We want parrallelism in our program whenever possible as this is always 100% efficient.
+    Function pointer
+        Has the syntax of int (*function)(arg1, arg2); function = &otherFunction; Function then acts as function it is 
+        pointing at. 
+    Thread pools
+        There is a task queue, main thread and thread pool. Main thread creates and maintains thread queue. Thread pool
+        gets tasks from task queue. 
+        Task queue is an array or list of task struct, task struct contains data relevant to task.
+        Include a function pointer as the task variable
+        Data can be stored seperately and then combined after.
+Processes can contain multiple threads, each process treats variables seperately and cannot share 
+variables while threads can share variables and both change the same value. This is the same as to
+say that threads share memory while processes do not.
