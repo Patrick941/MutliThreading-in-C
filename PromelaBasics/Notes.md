@@ -1,5 +1,6 @@
 # **Promela Spin:**
 ## Command Line:
+
     spin main.pml                   // Run program
     spin -uN main.pml               // Run program for N steps
     spin -a main.pml                // Run program and generate the verifier source code
@@ -18,6 +19,7 @@
 The valid data types are bit, bool, byte, short, int and unsigned. Floats are not a valid date type but can be used in embedded C programs which can be used if assumed to be true by spin.
 ### 'do' 
 This is the same as while C (not sure if it can only contain conditions as instructions), it is formatted as such:
+
     do
     :: // Instruction 1
     :: // Instruction 2
@@ -25,6 +27,7 @@ This is the same as while C (not sure if it can only contain conditions as instr
     od
 ### 'if' 
 If statements are not functionally identical to C, only one instruction inside the statement can be executed meaning that it two are true then there is no garauntee which of the instructions will execute, the if statement can be formatted as such: (The '->' can be replaced with a ';')
+
     if
     :: // Condition 1 -> // Instruction
     :: // Condition 2 -> // Instruction
@@ -32,14 +35,17 @@ If statements are not functionally identical to C, only one instruction inside t
     fi;
 ### Conditional assignments
 This will assign to the first value if true and the second value if false, this can be formatted as such:
+
     max = (a > b -> a : b)
 ### 'for'
 For loops can be implemented using the "for.h" library, the syntax is as such:
+
     for (i, 1, 10)
         sum = sum + i;
     rof(i)
 ### 'goto' 
 Can be used to go to a specific line and can be used to go to specific labels also which are created much like arm assembly. They are formatted as such:
+
     do
     :: if something -> repeat
     :: else -> goto end
@@ -53,6 +59,7 @@ Preconditions are not often used in spin as their is rarely an input that is non
 ## Concurrency
 ### Processes 
 In promela processes can be defined using: (active means that the process is always active and runs continuously)
+
     active proctype() {
         //some code
     }
@@ -60,6 +67,7 @@ In promela processes can be defined using: (active means that the process is alw
 Statements in promela are atomic which is the same as C, each instruction will be executed to its entirety before the next line in this process is executed.
 ### Set of processes
 Processes which are identical can be declared as sets. They can then be destinguished when in their sets using the _pid variable, the syntax is as such:
+
     byte n = 0;
 
     active [2] proctype P() {
@@ -70,6 +78,7 @@ Processes which are identical can be declared as sets. They can then be destingu
     }
 ### 'init' 
 This is a process which is executed before other processes in promela, it is also able to 'run' and 'stop' other processes. It is also able to wait for other processes using nr_pr. This can all be shown in the code block below:
+
     init{
         atomic{
             run P();
@@ -79,6 +88,7 @@ This is a process which is executed before other processes in promela, it is als
     }
 ### 'd_step' 
 This can be used to execute in deterministic step, this means that all the instructions inside this block will be allowed to execute as the same time.
+
     d_step{
         //code
     }
@@ -90,6 +100,7 @@ This can by done by simply setting a variable when a process is in a critical se
 A state of a promela program represents all the variables and current location of each variable. Not all these states will be possible as there may be blocking statements at points of the code forcing a specific order of execution.
 ### Semaphores
 This is a variable of type byte, it is not a functional variable as it is in C, we must manipulate the variable to create the same functionality as C. Semaphores can wait and signal, they act the same as they do in C, they can be implemented as shown below:
+
     process 1:
     do
         //non-critical section
