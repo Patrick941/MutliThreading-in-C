@@ -201,3 +201,53 @@ Inline constructs have similar functionality to functions in C but are lacking s
     }
 
 ## Channels
+A channel is a method of allowing processes to communicate with one another, it is modelled after channels that exist in computer networks. However, one channel can have multiple receivers and multiple senders which is unlike computer networks channels.
+### Implementation
+### Syntax
+The syntax of a channel is as follows:
+
+    chan ch = [capacity] of {typename, ..., typename}
+
+    ch ! open(data1, data2);
+
+    ch ! (data1, data2);
+### Example
+To create a channel of capacity 5 where each message can include an integer, Byte and bool. The following code shows the create of the channel, the opening of the channel with some starting data and then the sending of the data along the channel.
+
+    chan channel = [4] of {integer, Byte, bool}
+    channel ! open(48, 5, false);
+    channel ! (56, 3, false);
+
+### Rendezvous channel
+This is a channel with capacity 0, there is one sender and one receiver. There is an integer to track the message count. It is not often used.
+
+### Reply channels
+This is a two channel set up where one channel is dedicated for senciding and one is dedicated to receiving (in a local scope). By creating channels locally we can ensure that the channels are deleted after the client dies.
+
+### Buffered channels
+This is a solution where a queue is created for the messages to be sent across a channel. This can be represented in promela with a positive channel capacity such as in the above code snippet.
+When using buffered channels it is possible to query the current amount of messages waiting in the buffer. The two available querying functions are nfull, full, nempty and empty, they will all return a true or false value. An example of them in use is below:
+    
+    empty(channel);
+    nempty(channel);
+    full(channel);
+    nfull(channel);
+
+### Random receive
+This allows messages to be received from any part of the queue, not just the head. Using random receive it is also possible only to receive messages that are meant for the receiver. This is implemented in the code snippet below:
+
+    reply ?? server, eval(_pid)
+    
+### Sorted send
+This is a send statement which is used for buffered channels and acts as the corresponding send to the random receive. The format is the same as normal send but [] is used instead of ()
+
+    channel ! [data1, data2]
+
+### Copying message data
+This is useful when we want to read the data from a message but not remove it from the channel. This can be done like this:
+
+    ch ? <colour, time, flash>      //This is for a normal receive
+    ch ?? <colour, time, flash>     //This is for a random receive
+
+### Polling
+This is the method of the receiver polling the channel after a specified time (or as often as it can sometimes) and reading if data is present.
