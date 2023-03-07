@@ -122,3 +122,82 @@ This following code will generate a number between LOW and HIGH. It is worth not
     ::  number < HIGH -> number++
     ::  break
     od;
+
+## Linear temporal logic
+Some issues cannot always be identified with assertion, the issue will either not be detected or the program may not finish and may not reach the line with the assertion before timeout.
+#### Critical zone
+Only 1 process should be in the critical zone at the same time which cannot be easily garaunteed with assertions.
+#### Deadlocks
+This will prevent the program from reaching whatever assertions it may have done
+#### Array Bounds
+This is the accessing of data outside of array bounds, this is very inconvenient to have to assert every time the array is accessed although it is possible.
+### Implementation of LTL
+#### Syntax:
+The following operators can be combined to create conditions such as would be found inside an 'if' statement.
+Operators:
+
+    not         !=
+    and         && 
+    or          ||
+    implies     ->
+    equivalent  <->
+
+Temporal operators:
+
+    always      []
+    eventually  <>
+    until       U 
+
+#### Use in code:
+To implement LTL into code we use the above syntax inside if and do statements as shown in the following code snippet:
+
+    active proctype P() {
+        do
+        ::  wantP = true;
+            !wantQ;
+            critical++;
+            //critical section code
+            critical--;
+            wantP = false;
+    }
+
+### Safety properties
+This is a property which is given using the never statement, the condition inside this never statement should never become true at any point in the code and if this conditon were to become true the program would teminate.
+### Remote references
+A code snippet for this is given below:
+
+    #define mutex !(P@cs && Q^cs)
+
+    active proctype P(){
+        do
+        ::  wantP = true;
+            !wantQ;
+        cs: wantP = false;
+        od;
+    }
+
+    active proctype Q(){
+        do
+        ::  wantQ = true;
+            !wantP;
+        cs: wantQ = false;
+        od;
+    }
+
+## Data and program structures
+### Arrays
+Arrays are a data structure with the same purpose as C and with a syntax the same as C.
+### Structs
+Structs exist the same as they do in C and also with a syntax the same as C.
+### Pre-processor
+Serves the same purpose as C, performs the same operations as C, is interacted with using the same syntax as C. 
+### Inline
+Inline constructs have similar functionality to functions in C but are lacking some key features. Inline constructs do not return values or local scope. An example of an inline construct is as follows:
+
+    inline initEntry(I, R, C, V){
+        a[I].row = R;
+        a[I].col = C;
+        a[I].value = V;
+    }
+
+## Channels
