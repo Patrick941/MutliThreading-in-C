@@ -65,6 +65,7 @@ inline extract() {
 
 inline produce(p) {
   lock(mtx);
+  printf("Lock was exited by process %d\n", _pid);
   assert(mtx.mid == _pid);
   do
   :: !bfull -> break;
@@ -83,7 +84,7 @@ inline produce(p) {
 proctype producer(int pno) {
   int p=0;
   do
-  :: produce(p+pno); p = p % REPEAT + 2
+  :: produce(p+pno); p = (p+2) % REPEAT
   // pno=1 generates 1,3,5,7,1,3,5,7,...
   // pno=2 generates 2,4,6,8,2,4,6,8,...
   od
