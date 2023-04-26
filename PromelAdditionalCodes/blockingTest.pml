@@ -5,8 +5,8 @@ bool myBool;
 init{
     atomic{
         run P1();
-        run P3();
         run P4();
+        run P3();
     }
 }
 
@@ -34,11 +34,18 @@ proctype P1(){
 
 proctype P3(){
     printf("Waiting for comparison to become true\n");
-    y > x;
+    myBool = y > x;
     printf("Comparison became true\n");
 }
 
 proctype P4(){
+    int i = 0;
+    int tickDelay = 10000000;
+    do
+    ::  i < tickDelay -> i++
+    ::  else -> printf("~~~~~");
+                break;
+    od
     printf("Setting variables so they don't block\n");
     y = 3;
     printf("Variables have been set so they don't block\n");

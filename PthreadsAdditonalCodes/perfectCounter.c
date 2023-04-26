@@ -10,9 +10,9 @@ pthread_mutex_t lock;
 
 int perfectCount = 0;
 
-void inputDivider(void * arg);
+void * inputDivider(void * arg);
 
-int isEven(int n);
+int isPerfect(int n);
 
 int main(){
     pthread_mutex_init(&lock, NULL);
@@ -27,17 +27,19 @@ int main(){
     }
 
     for(int i = 0; i < THREAD_COUNT; i++){
-        int result = pthread_join(&threads[i], NULL);
+        int result = pthread_join(threads[i], NULL);
         if (result == -1){
             exit(1);
         }
     }
 
+    printf("The amount of perfect numbers was %i\n", perfectCount);
+
     pthread_mutex_destroy(&lock);
 }
 
 
-void inputDivider(void * arg){
+void * inputDivider(void * arg){
     int index = *((int*)arg);
     int stepSize = N / THREAD_COUNT;
     int upperBounds, lowerBounds;
@@ -49,16 +51,18 @@ void inputDivider(void * arg){
         lowerBounds = index * stepSize;
         upperBounds = (index + 1) * stepSize;
     }
+    //printf("For thread %i the lowerBounds are %i and the upper bounds %i\n", index, lowerBounds, upperBounds);
     for(int i = lowerBounds; i < upperBounds; i++){
-        if(isEven(i) == 1){
+        if(isPerfect(i) == 1){
             localSum++;
         }
     }
     pthread_mutex_lock(&lock);
-    perfectCount++;
+    perfectCount =+ localSum;
     pthread_mutex_unlock(&lock);
+    return NULL;
 }
 
-int isEven(int n){
+int isPerfect(int n){
     return ( 2 * (((double)n / 2.0) - (n / 2)));
 }

@@ -1,4 +1,5 @@
-int value = 5;
+int mem1 = 5;
+int mem2 = 9;
 
 
 init{
@@ -9,9 +10,16 @@ init{
 
 proctype P1(){
     atomic{
-        int temp = value;
-        printf("The value in memory was %d\n", temp);
-        value = 1;
-        printf("The value in memory is now %d\n", value);
+        int localReg = 5;
+        int res = mem1 == localReg;
+        do
+        :: res == 1 ->  mem1 = mem2; 
+                        printf("Values were equal\n");
+                        break;
+        :: else     ->  localReg = mem1;
+                        printf("Values were not equal\n");
+                        break;
+        od;
+        
     }
 }
