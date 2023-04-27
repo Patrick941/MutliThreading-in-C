@@ -4,17 +4,15 @@
 
 mtype = { unlocked, locked } ;
 
-
 typedef mutexData {
   mtype mstate;
   byte mid;
-  // may need more fields here
+  chan lockChan;
 }
 
-
 typedef condvarData {
-  mtype cstate;
-  // may need different fields here
+  chan cstate;
+  byte waiting;
 }
 
 mutexData mtx;
@@ -25,48 +23,48 @@ condvarData cvars[2];
 
 inline initsync() {
   mtx.mstate = unlocked;
-  cvars[0].cstate = true;
-  cvars[1].cstate = true;
-  // may need more/different code to initialise fields here
+  mtx.lockChan = chan(1);
+  cvars[0].cstate = chan(1);
+  cvars[0].waiting = 0;
+  cvars[1].cstate = chan(1);
+  cvars[1].waiting = 0;
 }
 
 // pthread_mutex_lock(&m);
 inline lock(m) {
   printf("@@@ %d LOCKING : state is %e\n",_pid,m.mstate)
-    do
-    ::    atomic{m.mstate == unlocked -> m.mid = _pid; m.mstate = locked; break;}
-    ::    else;
-    od;
+  m.lockChan ? 1;
+  m.mid = _pid;
+  m.mstate = locked;
   printf("@@@ %d LOCKED : state is %e\n",_pid,m.mstate)
 }
 
 // pthread_mutex_unlock(&m);
 inline unlock(m) {
-  atomic{
-    printf("@@@ %d UNLOCKING : state is %e\n",_pid,m.mstate)
-    m.mstate = unlocked;
-    m.mid = 255;
-    printf("@@@ %d UNLOCKED : state is %e\n",_pid,m.mstate)
-  }
+  printf("@@@ %d UNLOCKING : state is %e\n",_pid,m.mstate)
+  m.mstate = unlocked;
+  m.mid = 255;
+  m.lockChan ! 1;
+  printf("@@@ %d UNLOCKED : state is %e\n",_pid,m.mstate)
 }
 
 // pthread_cond_wait(&c,&m);
 inline wait(c,m) {
-  printf("@@@ %d WAIT for cond[%d]=%d with mutex=%e\n",_pid,c, cvars[c].cstate,m.mstate)
+  printf("@@@ %d WAIT for cond[%d] with mutex=%e\n",_pid,c,m.mstate)
   unlock(m);
-  cvars[c].cstate = locked;
-  do
-  ::  atomic{cvars[c].cstate == unlocked -> lock(m); break;}
-  ::  else;
-  od;
-  printf("@@@ %d DONE with cond[%d]=%d with mutex=%e\n",_pid, c,cvars[c].cstate,m.mstate)
+  cvars[c].waiting++;
+  cvars[c].cstate ? 1;
+  cvars[c].waiting--;
+  lock(m);
+  printf("@@@ %d DONE with cond[%d] with mutex=%e\n",_pid, c,m.mstate)
 }
 
 // pthread_cond_signal(&c);
 inline signal(c) {
-  atomic{
-    printf("@@@ %d SIGNAL cond[%d]=%d\n",_pid,c,cvars[c].cstate)
-    cvars[c].cstate = unlocked;
-    printf("@@@ %d SIGNALLED cond[%d]=%d\n",_pid,c,cvars[c].cstate)
-  }
+  printf("@@@ %d SIGNAL cond[%d]\n",_pid,c)
+  if
+  :: cvars[c].waiting > 0 -> cvars[c].cstate ! 1;
+  :: else -> skip;
+  fi;
+  printf("@@@ %d SIGNALLED cond[%d]\n",_pid,c)
 }
