@@ -4,7 +4,7 @@ bool myBool;
 
 init{
     atomic{
-        run P1();
+        //run P1();
         run P4();
         run P3();
     }
@@ -44,9 +44,11 @@ proctype P4(){
     do
     ::  i < tickDelay -> i++
     ::  else -> printf("~~~~~");
+                printf("Setting variables so they don't block\n");
+                y = 3;
+                y = 1;
+                printf("Variables have been set so they don't block\n");
                 break;
     od
-    printf("Setting variables so they don't block\n");
-    y = 3;
-    printf("Variables have been set so they don't block\n");
+    
 }

@@ -251,3 +251,16 @@ This is useful when we want to read the data from a message but not remove it fr
 
 ### Polling
 This is the method of the receiver polling the channel after a specified time (or as often as it can sometimes) and reading if data is present.
+
+
+### New things learned
+Progress labels are used to indicate an infinite loops that are acceptable and to indiicate progress is being made
+End labels are used to indicate an end state and is used to specify a valid end state usedd to show that if stuck in a position it is correct
+
+Embarrasingly parallel is a problem that can be easily parallelised. 
+Massievly parallel is the solution to the problem that is implemented with little interaction between threads.
+
+Assert is used to specify state and run with verify
+
+Virtual memory and memory protection unit protect from other processes.
+
